@@ -47,8 +47,8 @@ def xor_data(data: Union[bytes, str], key: Union[bytes, str]) -> bytes:
         key = key.encode('utf-8')
 
     # Ensure key is not empty to avoid division by zero
-    if not key:
-        return b"[ERROR] XOR key cannot be empty"
+    if not f1:
+        return b"[PUMPKIN_COMMENT] XOR key cannot be empty"
 
     # Perform repeating key XOR
     output = bytearray()
